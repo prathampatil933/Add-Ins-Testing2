@@ -5,11 +5,62 @@
 <head>
     <!-- Office JavaScript API -->
     <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <style>
+        .container {
+            margin: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 10px;
+        }
+
+        .form-group label {
+            display: block;
+            font-weight: bold;
+        }
+
+        .form-group select, 
+        .form-group input[type="text"] {
+            width: 100%;
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+        }
+
+        #messageInput {
+            height: 100px;
+        }
+
+        #sendButton {
+            padding: 10px 20px;
+            background-color: #0078d4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        #sendButton:hover {
+            background-color: #005a9e;
+        }
+    </style>
 </head>
 
 <body>
-    <p>This add-in will insert the text 'Hello world!' in a new message.</p>
-    <button id="helloButton">Say hello (Testing From Pratham)</button>
+    <div class="container">
+        <h2>Send Message</h2>
+        <div class="form-group">
+            <label for="userSelection">Select User:</label>
+            <select id="userSelection">
+                <!-- Options for selecting users will be populated dynamically -->
+            </select>
+        </div>
+        <div class="form-group">
+            <label for="messageInput">Message:</label>
+            <textarea id="messageInput" rows="4" cols="50"></textarea>
+        </div>
+        <button id="sendButton">Send Message</button>
+    </div>
 
     <!-- The following image URL tracks diagnostic data for this sample add-in. Please remove the image tag if you reuse this sample in your own code project. -->
     <img src="https://pnptelemetry.azurewebsites.net/pnp-officeaddins/samples/outlook-add-in-hello-world-run" />
@@ -19,28 +70,40 @@
 
     Office.onReady((info) => {
         if (info.host === Office.HostType.Outlook) {
-            document.getElementById("helloButton").onclick = sayHello;
+            // Load users from the same institute when the add-in is ready
+            loadUsersFromSameInstitute();
+            document.getElementById("sendButton").onclick = sendMessage;
         }
     });
 
     /**
-     * Writes 'Hello world!' to a new message body.
+     * Load users from the same institute and populate the selection box.
      */
-    function sayHello() {
-        Office.context.mailbox.item.body.setAsync(
-            "Hello world!",
-            {
-                coercionType: "html", // Write text as HTML
-            },
+    function loadUsersFromSameInstitute() {
+        // Dummy data for testing UI
+        const users = [
+            { id: 1, name: "User 1" },
+            { id: 2, name: "User 2" },
+            { id: 3, name: "User 3" }
+        ];
 
-            // Callback method to check that setAsync succeeded
-            function (asyncResult) {
-                if (asyncResult.status ==
-                    Office.AsyncResultStatus.Failed) {
-                    write(asyncResult.error.message);
-                }
-            }
-        );
+        // Populate the selection box with dummy users
+        const userSelection = document.getElementById('userSelection');
+        users.forEach(user => {
+            const option = document.createElement('option');
+            option.value = user.id;
+            option.text = user.name;
+            userSelection.appendChild(option);
+        });
+    }
+
+    /**
+     * Sends the message to the selected user.
+     */
+    function sendMessage() {
+        const userId = document.getElementById("userSelection").value;
+        const message = document.getElementById("messageInput").value;
+        // Implementation of sending message will be added later
     }
 
 </script>
