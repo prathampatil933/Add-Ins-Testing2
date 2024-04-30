@@ -2,97 +2,60 @@
 <html>
 
 <head>
+    <!-- Office JavaScript API -->
+    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .container {
             margin: 20px;
-            font-family: Arial, sans-serif;
-        }
-
-        .form-group {
-            margin-bottom: 15px;
-        }
-
-        .form-group label {
-            display: block;
+	@@ -19,7 +19,7 @@
             font-weight: bold;
-            margin-bottom: 5px;
         }
 
+        .form-group select,
         .form-group input[type="text"] {
-            width: calc(100% - 10px);
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
-
-        #userList {
-            width: calc(100% - 10px);
-            padding: 8px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-            height: 150px;
-            overflow-y: auto;
-        }
-
-        #searchButton {
-            padding: 10px 20px;
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 16px;
-        }
-
-        #searchButton:hover {
-            background-color: #005a9e;
-        }
-    </style>
-</head>
-
-<body>
+            width: 100%;
+            padding: 5px;
+	@@ -50,7 +50,7 @@
     <div class="container">
-        <h2>Search User in the Organization</h2>
+        <h2>Send Message</h2>
         <div class="form-group">
-            <label for="userNameInput">Enter User Name:</label>
-            <input type="text" id="userNameInput" placeholder="Enter user name......">
-        </div>
-        <div class="form-group">
-            <label for="userList">Matching Users:</label>
-            <select id="userList" multiple>
-                <!-- Options for displaying users will be populated dynamically -->
+            <label for="userSelection">Select User: (Testing 2 of adding Searching API)</label>
+            <select id="userSelection">
+                <!-- Options for selecting users will be populated dynamically -->
             </select>
-        </div>
-        <button id="searchButton">Search User</button>
-    </div>
+	@@ -70,30 +70,35 @@ <h2>Send Message</h2>
 
-    <script>
-        $(document).ready(function () {
-            $('#searchButton').click(function () {
-                var userName = $('#userNameInput').val();
-                if (userName) {
-                    $.ajax({
-                        url: "https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '" + userName + "')",
-                        type: "GET",
-                        success: function (response) {
-                            var userList = $('#userList');
-                            userList.empty();
-                            response.value.forEach(function (user) {
-                                var option = $('<option>').text(user.displayName);
-                                userList.append(option);
-                            });
-                        },
-                        error: function (error) {
-                            console.error('Error fetching users:', error);
-                        }
-                    });
-                } else {
-                    alert('Please enter a user name to search.');
-                }
-            });
+    Office.onReady((info) => {
+        if (info.host === Office.HostType.Outlook) {
+            // Load users from the same organization when the add-in is ready
+            loadUsersFromOrganization();
+            document.getElementById("sendButton").onclick = sendMessage;
+        }
+    });
+
+    /**
+     * Load users from the same organization and populate the selection box.
+     */
+    function loadUsersFromOrganization() {
+        // Fetch users from the organization using Microsoft Graph API
+        $.ajax({
+            url: "https://graph.microsoft.com/v1.0/users",
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer INSERT_ACCESS_TOKEN_HERE"
+            },
+            success: function(response) {
+                // Populate the selection box with retrieved users
+                response.value.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.text = user.displayName;
+                    document.getElementById('userSelection').appendChild(option);
+                });
+            },
+            error: function(error) {
+                console.error('Error fetching users:', error);
+            }
         });
-    </script>
-</body>
-
-</html>
+    }
