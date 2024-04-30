@@ -39,6 +39,12 @@
         #sendButton:hover {
             background-color: #005a9e;
         }
+
+        #successMessage {
+            color: green;
+            font-weight: bold;
+            display: none;
+        }
     </style>
 </head>
 
@@ -54,6 +60,7 @@
             <textarea id="messageInput" rows="4" cols="50" placeholder="Enter your message..."></textarea>
         </div>
         <button id="sendButton">Send Message</button>
+        <span id="successMessage">Message sent successfully!</span>
     </div>
 
     <!-- The following image URL tracks diagnostic data for this sample add-in. Please remove the image tag if you reuse this sample in your own code project. -->
@@ -77,8 +84,12 @@
 
         // Check if recipient email and message are provided
         if (recipientEmail && message) {
-            // Forward the message to the recipient on Teams (implementation needed)
-            alert("Message sent successfully to " + recipientEmail + " on Teams: " + message);
+            // Open a new chat window in Teams with the recipient's email pre-filled
+            Office.context.ui.displayDialogAsync(`https://teams.microsoft.com/l/chat/0/0?users=${recipientEmail}`, { height: 50, width: 50 });
+            
+            // Display success message and disable the send button
+            document.getElementById("successMessage").style.display = "inline";
+            document.getElementById("sendButton").disabled = true;
         } else {
             alert("Please provide recipient's email and message to send.");
         }
