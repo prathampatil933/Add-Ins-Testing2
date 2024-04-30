@@ -39,12 +39,6 @@
         #sendButton:hover {
             background-color: #005a9e;
         }
-
-        #successMessage {
-            color: green;
-            font-weight: bold;
-            display: none;
-        }
     </style>
 </head>
 
@@ -60,7 +54,6 @@
             <textarea id="messageInput" rows="4" cols="50" placeholder="Enter your message..."></textarea>
         </div>
         <button id="sendButton">Send Message</button>
-        <span id="successMessage">Message sent successfully!</span>
     </div>
 
     <!-- The following image URL tracks diagnostic data for this sample add-in. Please remove the image tag if you reuse this sample in your own code project. -->
@@ -84,52 +77,32 @@
 
         // Check if recipient email and message are provided
         if (recipientEmail && message) {
-            // Make a request to your server-side component to obtain the access token
+            // Prepare message payload
+            const payload = {
+                "body": {
+                    "content": message
+                }
+            };
+
+            // Make request to send message to Teams
             $.ajax({
-                url: "https://your-server-url.com/get-access-token",
-                type: "GET",
-                success: function(response) {
-                    // Use the obtained access token to send the message to the recipient on Teams
-                    sendTeamsMessage(recipientEmail, message, response.access_token);
+                url: "https://graph.microsoft.com/v1.0/me/messages",
+                type: "POST",
+                data: JSON.stringify(payload),
+                headers: {
+                    "Authorization": "Bearer " + Office.context.mailbox.getCallbackTokenAsync({ isRest: true }),
+                    "Content-Type": "application/json"
                 },
-                error: function(error) {
-                    console.error('Error obtaining access token:', error);
-                    alert("Error obtaining access token. Please try again.");
+                success: function(response) {
+                    alert("Message sent successfully to Teams!");
+                },
+                error: function(xhr, status, error) {
+                    alert("Failed to send message to Teams: " + xhr.responseText);
                 }
             });
         } else {
             alert("Please provide recipient's email and message to send.");
         }
-    }
-
-    /**
-     * Sends the message to the recipient on Teams using the obtained access token.
-     */
-    function sendTeamsMessage(recipientEmail, message, accessToken) {
-        // Make a request to Microsoft Graph API to send the message
-        $.ajax({
-            url: "https://graph.microsoft.com/v1.0/users/" + recipientEmail + "/teamwork/sendActivityNotification",
-            type: "POST",
-            headers: {
-                "Authorization": "Bearer " + accessToken,
-                "Content-Type": "application/json"
-            },
-            data: JSON.stringify({
-                "topic": {
-                    "source": "text",
-                    "value": message
-                }
-            }),
-            success: function(response) {
-                // Display success message and disable the send button
-                document.getElementById("successMessage").style.display = "inline";
-                document.getElementById("sendButton").disabled = true;
-            },
-            error: function(error) {
-                console.error('Error sending message:', error);
-                alert("Error sending message. Please try again.");
-            }
-        });
     }
 
 </script>
