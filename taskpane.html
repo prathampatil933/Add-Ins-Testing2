@@ -2,8 +2,6 @@
 <html>
 
 <head>
-    <!-- Office JavaScript API -->
-    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .container {
@@ -19,7 +17,6 @@
             font-weight: bold;
         }
 
-        .form-group select,
         .form-group input[type="text"] {
             width: 100%;
             padding: 5px;
@@ -27,90 +24,54 @@
             border: 1px solid #ccc;
         }
 
-        #messageInput {
-            height: 100px;
-        }
-
-        #sendButton {
-            padding: 10px 20px;
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-
-        #sendButton:hover {
-            background-color: #005a9e;
+        #userList {
+            width: 100%;
         }
     </style>
 </head>
 
 <body>
     <div class="container">
-        <h2>Send Message</h2>
+        <h2>Search User in the Organization</h2>
         <div class="form-group">
-            <label for="userSelection">Select User: (Testing 2 of adding Searching API)</label>
-            <select id="userSelection">
-                <!-- Options for selecting users will be populated dynamically -->
+            <label for="userNameInput">Enter User Name:</label>
+            <input type="text" id="userNameInput" placeholder="Enter user name...">
+        </div>
+        <div class="form-group">
+            <label for="userList">Matching Users:</label>
+            <select id="userList">
+                <!-- Options for displaying users will be populated dynamically -->
             </select>
         </div>
-        <div class="form-group">
-            <label for="messageInput">Message:</label>
-            <textarea id="messageInput" rows="4" cols="50"></textarea>
-        </div>
-        <button id="sendButton">Send Message</button>
+        <button id="searchButton">Search User</button>
     </div>
 
-    <!-- The following image URL tracks diagnostic data for this sample add-in. Please remove the image tag if you reuse this sample in your own code project. -->
-    <img src="https://pnptelemetry.azurewebsites.net/pnp-officeaddins/samples/outlook-add-in-hello-world-run" />
-</body>
-
-<script>
-
-    Office.onReady((info) => {
-        if (info.host === Office.HostType.Outlook) {
-            // Load users from the same organization when the add-in is ready
-            loadUsersFromOrganization();
-            document.getElementById("sendButton").onclick = sendMessage;
-        }
-    });
-
-    /**
-     * Load users from the same organization and populate the selection box.
-     */
-    function loadUsersFromOrganization() {
-        // Fetch users from the organization using Microsoft Graph API
-        $.ajax({
-            url: "https://graph.microsoft.com/v1.0/users",
-            type: "GET",
-            headers: {
-                "Authorization": "Bearer INSERT_ACCESS_TOKEN_HERE"
-            },
-            success: function(response) {
-                // Populate the selection box with retrieved users
-                response.value.forEach(user => {
-                    const option = document.createElement('option');
-                    option.value = user.id;
-                    option.text = user.displayName;
-                    document.getElementById('userSelection').appendChild(option);
-                });
-            },
-            error: function(error) {
-                console.error('Error fetching users:', error);
-            }
+    <script>
+        $(document).ready(function () {
+            $('#searchButton').click(function () {
+                var userName = $('#userNameInput').val();
+                if (userName) {
+                    $.ajax({
+                        url: "https://graph.microsoft.com/v1.0/users?$filter=startswith(displayName, '" + userName + "')",
+                        type: "GET",
+                        success: function (response) {
+                            var userList = $('#userList');
+                            userList.empty();
+                            response.value.forEach(function (user) {
+                                var option = $('<option>').text(user.displayName);
+                                userList.append(option);
+                            });
+                        },
+                        error: function (error) {
+                            console.error('Error fetching users:', error);
+                        }
+                    });
+                } else {
+                    alert('Please enter a user name to search.');
+                }
+            });
         });
-    }
-
-    /**
-     * Sends the message to the selected user.
-     */
-    function sendMessage() {
-        const userId = document.getElementById("userSelection").value;
-        const message = document.getElementById("messageInput").value;
-        // Implementation of sending message will be added later
-    }
-
-</script>
+    </script>
+</body>
 
 </html>
