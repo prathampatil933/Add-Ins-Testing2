@@ -1,10 +1,10 @@
-<!-- Copyright (c) Microsoft Corporation. All rights reserved. Licensed under the MIT License. -->
 <!DOCTYPE html>
 <html>
 
 <head>
     <!-- Office JavaScript API -->
     <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
     <style>
         .container {
             margin: 20px;
@@ -19,7 +19,7 @@
             font-weight: bold;
         }
 
-        .form-group select, 
+        .form-group select,
         .form-group input[type="text"] {
             width: 100%;
             padding: 5px;
@@ -50,7 +50,7 @@
     <div class="container">
         <h2>Send Message</h2>
         <div class="form-group">
-            <label for="userSelection">Select User:</label>
+            <label for="userSelection">Select User: (Testing 2 of adding Searching API)</label>
             <select id="userSelection">
                 <!-- Options for selecting users will be populated dynamically -->
             </select>
@@ -70,30 +70,35 @@
 
     Office.onReady((info) => {
         if (info.host === Office.HostType.Outlook) {
-            // Load users from the same institute when the add-in is ready
-            loadUsersFromSameInstitute();
+            // Load users from the same organization when the add-in is ready
+            loadUsersFromOrganization();
             document.getElementById("sendButton").onclick = sendMessage;
         }
     });
 
     /**
-     * Load users from the same institute and populate the selection box.
+     * Load users from the same organization and populate the selection box.
      */
-    function loadUsersFromSameInstitute() {
-        // Dummy data for testing UI
-        const users = [
-            { id: 1, name: "User 1" },
-            { id: 2, name: "User 2" },
-            { id: 3, name: "User 3" }
-        ];
-
-        // Populate the selection box with dummy users
-        const userSelection = document.getElementById('userSelection');
-        users.forEach(user => {
-            const option = document.createElement('option');
-            option.value = user.id;
-            option.text = user.name;
-            userSelection.appendChild(option);
+    function loadUsersFromOrganization() {
+        // Fetch users from the organization using Microsoft Graph API
+        $.ajax({
+            url: "https://graph.microsoft.com/v1.0/users",
+            type: "GET",
+            headers: {
+                "Authorization": "Bearer INSERT_ACCESS_TOKEN_HERE"
+            },
+            success: function(response) {
+                // Populate the selection box with retrieved users
+                response.value.forEach(user => {
+                    const option = document.createElement('option');
+                    option.value = user.id;
+                    option.text = user.displayName;
+                    document.getElementById('userSelection').appendChild(option);
+                });
+            },
+            error: function(error) {
+                console.error('Error fetching users:', error);
+            }
         });
     }
 
