@@ -73,44 +73,30 @@
      */
     function sendMessage() {
         const recipientEmail = document.getElementById("recipientEmail").value;
-        const message = document.getElementById("messageInput").value;
 
-        // Check if recipient email and message are provided
-        if (recipientEmail && message) {
-            // Prepare message payload
-            const payload = {
-                "body": {
-                    "content": message
-                }
-            };
-
-            // Make request to send message to Teams
+        // Check if recipient email is provided
+        if (recipientEmail) {
+            // Make request to search for "SteepGraph company Founded by"
             $.ajax({
-                url: "https://graph.microsoft.com/v1.0/me/messages",
-                type: "POST",
-                data: JSON.stringify(payload),
-                headers: {
-                    "Authorization": "Bearer " + Office.context.mailbox.getCallbackTokenAsync({ isRest: true }),
-                    "Content-Type": "application/json"
-                },
+                url: "https://www.google.com/search?q=SteepGraph+company+Founded+by",
+                type: "GET",
                 success: function(response) {
-                    alert("Message sent successfully to Teams!");
+                    // Parse the response to extract relevant information
+                    const parser = new DOMParser();
+                    const doc = parser.parseFromString(response, 'text/html');
+                    const searchResults = doc.getElementsByClassName('tF2Cxc');
+                    const resultText = searchResults[0].innerText;
+
+                    // Update the message input with the search result
+                    document.getElementById("messageInput").value = resultText;
                 },
                 error: function(xhr, status, error) {
-                    alert("Failed to send message to Teams: " + xhr.responseText);
+                    alert("Failed to retrieve search result from Google: " + error);
                 }
             });
         } else {
-            alert("Please provide recipient's email and message to send.");
+            alert("Please provide recipient's email.");
         }
-    }
-
-    /**
-     * This function is called when the "Send to Teams" button is clicked.
-     */
-    function sendMessageToTeams() {
-        // Call the existing sendMessage function
-        sendMessage();
     }
 
 </script>
