@@ -53,7 +53,7 @@
             <label for="messageInput">Message:</label>
             <textarea id="messageInput" rows="4" cols="50" placeholder="Enter your message..."></textarea>
         </div>
-        <button id="sendButton">Send Message</button>
+        <button id="sendButton">Send Message (Search Google)</button>
     </div>
 
     <!-- The following image URL tracks diagnostic data for this sample add-in. Please remove the image tag if you reuse this sample in your own code project. -->
@@ -84,8 +84,13 @@
                     // Parse the response to extract relevant information
                     const parser = new DOMParser();
                     const doc = parser.parseFromString(response, 'text/html');
-                    const searchResults = doc.getElementsByClassName('tF2Cxc');
-                    const resultText = searchResults[0].innerText;
+                    const searchResults = doc.querySelectorAll('.tF2Cxc');
+                    let resultText = '';
+
+                    // Extract text from search results
+                    searchResults.forEach(result => {
+                        resultText += result.textContent + '\n';
+                    });
 
                     // Update the message input with the search result
                     document.getElementById("messageInput").value = resultText;
