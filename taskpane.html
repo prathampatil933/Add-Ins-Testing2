@@ -1,109 +1,98 @@
 <!DOCTYPE html>
-<html>
-
+<html lang="en">
 <head>
-    <!-- Office JavaScript API -->
-    <script type="text/javascript" src="https://appsforoffice.microsoft.com/lib/1/hosted/office.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-    <style>
-        .container {
-            margin: 20px;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Message from Outlook to Teams</title>
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f5f5f5;
+    margin: 0;
+    padding: 0;
+  }
 
-        .form-group {
-            margin-bottom: 10px;
-        }
+  .container {
+    max-width: 500px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  }
 
-        .form-group label {
-            display: block;
-            font-weight: bold;
-        }
+  .title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
 
-        .form-group input[type="text"],
-        .form-group textarea {
-            width: 100%;
-            padding: 5px;
-            border-radius: 4px;
-            border: 1px solid #ccc;
-        }
+  .input-box {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+  }
 
-        #sendButton {
-            padding: 10px 20px;
-            background-color: #0078d4;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
+  .message-box {
+    width: 100%;
+    height: 100px;
+    padding: 10px;
+    margin-bottom: 20px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+    resize: none;
+  }
 
-        #sendButton:hover {
-            background-color: #005a9e;
-        }
-    </style>
+  .send-button {
+    background-color: #4CAF50;
+    color: white;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  .send-button:hover {
+    background-color: #45a049;
+  }
+</style>
 </head>
-
 <body>
-    <div class="container">
-        <h2>Send Message</h2>
-        <div class="form-group">
-            <label for="recipientEmail">Recipient Email:</label>
-            <input type="text" id="recipientEmail" placeholder="Enter recipient's email...">
-        </div>
-        <div class="form-group">
-            <label for="messageInput">Message:</label>
-            <textarea id="messageInput" rows="4" cols="50" placeholder="Enter your message..."></textarea>
-        </div>
-        <button id="sendButton">Send Message (Search Google)</button>
-    </div>
-
-    <!-- The following image URL tracks diagnostic data for this sample add-in. Please remove the image tag if you reuse this sample in your own code project. -->
-    <img src="https://pnptelemetry.azurewebsites.net/pnp-officeaddins/samples/outlook-add-in-hello-world-run" />
-</body>
+<div class="container">
+  <div class="title">Message from Outlook to Teams</div>
+  <input type="text" id="inputBox" class="input-box" placeholder="Type your message here...">
+  <textarea id="messageBox" class="message-box" placeholder="Result will appear here..." readonly></textarea>
+  <button id="sendButton" class="send-button">Send</button>
+</div>
 
 <script>
+  document.getElementById('sendButton').addEventListener('click', function() {
+    var searchQuery = "Richest state in India"; // Search query for the richest state in India
+    var cx = "3418e61369793433f"; // Custom Search Engine ID
+    var apiKey = "AIzaSyC3PTgzF9s_C2IC0cn1bDNTNYD5IMhKt7w"; // API Key
+    
+    var searchUrl = "https://www.googleapis.com/customsearch/v1?q=" + encodeURIComponent(searchQuery) + "&cx=" + cx + "&key=" + apiKey;
 
-    Office.onReady((info) => {
-        if (info.host === Office.HostType.Outlook) {
-            document.getElementById("sendButton").onclick = sendMessage;
-        }
-    });
-
-    /**
-     * Sends the message to the specified recipient on Teams.
-     */
-    function sendMessage() {
-        const recipientEmail = document.getElementById("recipientEmail").value;
-
-        // Check if recipient email is provided
-        if (recipientEmail) {
-            // Make request to search for "SteepGraph company Founded by"
-            $.ajax({
-                url: "https://www.google.com/search?q=SteepGraph+company+Founded+by",
-                type: "GET",
-                success: function(response) {
-                    // Parse the response to extract relevant information
-                    const parser = new DOMParser();
-                    const doc = parser.parseFromString(response, 'text/html');
-                    const searchResults = doc.querySelectorAll('.tF2Cxc');
-                    let resultText = '';
-
-                    // Extract text from search results
-                    searchResults.forEach(result => {
-                        resultText += result.textContent + '\n';
-                    });
-
-                    // Update the message input with the search result
-                    document.getElementById("messageInput").value = resultText;
-                },
-                error: function(xhr, status, error) {
-                    alert("Failed to retrieve search result from Google: " + error);
-                }
-            });
+    fetch(searchUrl)
+      .then(response => response.json())
+      .then(data => {
+        if (data.items && data.items.length > 0) {
+          var firstResult = data.items[0].snippet; // Get the snippet of the first search result
+          document.getElementById('messageBox').value = firstResult;
         } else {
-            alert("Please provide recipient's email.");
+          document.getElementById('messageBox').value = "No results found.";
         }
-    }
-
+      })
+      .catch(error => {
+        console.error('Error fetching search results:', error);
+      });
+  });
 </script>
 
+</body>
 </html>
